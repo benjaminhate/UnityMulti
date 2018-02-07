@@ -6,9 +6,10 @@ public class PlayerController : MonoBehaviour {
 
     public float speed;
     public float rotSpeed;
+    public float jspeed;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 
 	}
 	
@@ -30,5 +31,9 @@ public class PlayerController : MonoBehaviour {
         {
             transform.Rotate(Vector3.up * rotSpeed * Time.deltaTime);
         }
-	}
+        if (Input.GetKey(KeyCode.Space))
+        {
+            transform.Translate(Vector3.up * jspeed * Time.deltaTime);
+        }
+    }
 }
