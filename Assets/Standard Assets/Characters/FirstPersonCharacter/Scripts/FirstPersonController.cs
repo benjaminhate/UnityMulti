@@ -31,6 +31,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         public Camera m_Camera;
         private bool m_Jump;
+        public bool m_Fire;
         private float m_YRotation;
         private Vector2 m_Input;
         private Vector3 m_MoveDir = Vector3.zero;
@@ -42,6 +43,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float m_NextStep;
         private bool m_Jumping;
         private AudioSource m_AudioSource;
+        public GameObject bulletPrefab;
+        public Transform bulletSpawn;
 
         // Use this for initialization
         private void Start()
@@ -60,6 +63,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_StepCycle = 0f;
             m_NextStep = m_StepCycle/2f;
             m_Jumping = false;
+            m_Fire = false;
             m_AudioSource = GetComponent<AudioSource>();
 			m_MouseLook.Init(transform , m_Camera.transform);
         }
@@ -79,6 +83,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
             }
+
+
 
             if (!m_PreviouslyGrounded && m_CharacterController.isGrounded)
             {
@@ -145,6 +151,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_MouseLook.UpdateCursorLock();
         }
 
+        [Command]
+        void Cmdfire()
+        {
+            var bullet = (GameObject)Instantiate(
+                bulletPrefab,
+                bulletSpawn.position,
+                bulletSpawn.rotation);
+
+            bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * 6;
+
+            NetworkServer.Spawn(bullet);
+
+            Destroy(bullet, 2.0f);
+
+        }
 
         private void PlayJumpSound()
         {
@@ -218,9 +239,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // Read input
             float horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
             float vertical = CrossPlatformInputManager.GetAxis("Vertical");
+            bool m_Fire = CrossPlatformInputManager.GetButtonDown("Fire1");
 
             bool waswalking = m_IsWalking;
 
+            if (m_Fire)
+            {
+                Cmdfire();
+            }
 #if !MOBILE_INPUT
             // On standalone builds, walk/run speed is modified by a key press.
             // keep track of whether or not the character is walking or running
